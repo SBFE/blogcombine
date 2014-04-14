@@ -1,0 +1,36 @@
+var combine = addModule('js-combine-pack');
+var tool = combine.tool;
+var toolOptions = tool.config;
+var qs = require('querystring');
+var u = require('url');
+var fs = require('fs');
+var path = require('path');
+var byline = tool.lineStream;
+
+var findFiles = tool.findFiles;
+var byline = tool.lineStream;
+var dStream = tool.depsStream;
+
+var md5Cache = tool.md5Cache;
+
+route(function(req,res){
+	var query = qs.parse(u.parse(req.url).query);
+	var product = query.product;
+	var pageid = query.pageid;
+	var basepath = path.resolve(__dirname,'../'+product);
+	var srcUrl = basepath + '/conf/' + pageid + '.dev.js';
+
+	toolOptions.srcUrl = basepath;
+	
+	var jsList = findFiles.allFilesList(basepath);
+	var jsListCon = findFiles.allFilesCon(jsList);
+	var jsDepsMap = {};
+	var lineStream = new byline();
+	var depsStream = new dStream();
+	var confStream = fs.createReadStream(srcUrl);
+	confStream.pipe(lineStream);
+	lineStream.pipe(depsStream);
+	depsStream.pipe(lineStream,toolOptions,srcUrl,jsListCon,[srcUrl],jsDepsMap,function(){},function(data){
+		res.end(data);
+	});
+});

@@ -1,0 +1,16 @@
+{
+    "name":"blogcombine",
+    "version":"0.0.1",
+    "author":[{
+        "name":"fuqiang3",
+        "email":"fuqiang3@staff.sina.com.cn"
+    }],
+    "description":"sina blog combine js ext for .node",
+    "repository":{
+        "type":"git",
+        "url":"https://github.com/xiaojue/blogcombine.git"
+    },
+    "dependencies":{
+        "js-combine-pack":"*"
+    }
+}
