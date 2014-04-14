@@ -1,17 +1,13 @@
-var combine = addModule('js-combine-pack');
-var tool = combine.tool;
+var utils = addModule('js-combine-pack');
+var tool = utils.tool;
 var toolOptions = tool.config;
+var findFiles = tool.findFiles;
+var findJsAllImport = tool.findJsAllImport;
 var qs = require('querystring');
 var u = require('url');
 var fs = require('fs');
 var path = require('path');
 var byline = tool.lineStream;
-
-var findFiles = tool.findFiles;
-var byline = tool.lineStream;
-var dStream = tool.depsStream;
-
-var md5Cache = tool.md5Cache;
 
 route(function(req,res){
 	var query = qs.parse(u.parse(req.url).query);
@@ -20,17 +16,11 @@ route(function(req,res){
 	var basepath = path.resolve(__dirname,'../'+product);
 	var srcUrl = basepath + '/conf/' + pageid + '.dev.js';
 
-	toolOptions.srcUrl = basepath;
+	toolOptions.basedir = basepath;
 	
 	var jsList = findFiles.allFilesList(basepath);
-	var jsListCon = findFiles.allFilesCon(jsList);
-	var jsDepsMap = {};
-	var lineStream = new byline();
-	var depsStream = new dStream();
-	var confStream = fs.createReadStream(srcUrl);
-	confStream.pipe(lineStream);
-	lineStream.pipe(depsStream);
-	depsStream.pipe(lineStream,toolOptions,srcUrl,jsListCon,[srcUrl],jsDepsMap,function(){},function(data){
-		res.end(data);
+	var jsListCon = findFiles.allFilesCon(jsList,basepath);
+	findJsAllImport(srcUrl,jsListCon,function(data){
+		res.end(data);	
 	});
 });
