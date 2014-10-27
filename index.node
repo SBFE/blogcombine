@@ -37,19 +37,12 @@ route(function(req,res){
 
 	} else {
 		var jsList = findFiles.allFilesList(basepath);
-		var jsListCon = findFiles.allFilesCon(jsList, basepath);
-
-		findJsAllImport(srcUrl, jsListCon, function(data, importsFiles){
-			time = (+new Date) - startTime;
-			res.write('/* Time spend time '+time+'ms */\r\n');
-			//importsFiles.push(confPath);
-			//logger.info(importsFiles);
-			if (model) {
-				res.write('/* Time spend time '+time+'ms */\r\n');
-			} else {
-				res.end(data);
-			}
-
+		var jsListCon = findFiles.allFilesCon(jsList,basepath);
+		findJsAllImport(srcUrl,jsListCon,function(data){
+			res.writeHeader(200,{
+				'Content-Type':'application/javascript'
+			});
+			res.end(data);	
 		});
 	}
 });
