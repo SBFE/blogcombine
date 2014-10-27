@@ -1,12 +1,15 @@
+var startTime = +new Date;
 var utils = addModule('js-combine-pack');
 var tool = utils.tool;
 var toolOptions = tool.config;
 var findFiles = tool.findFiles;
 var findJsAllImport = tool.findJsAllImport;
+var getAllJsDeps = tool.getAllJsDeps;
 var qs = require('querystring');
 var u = require('url');
 var fs = require('fs');
 var path = require('path');
+//var console = require('console');
 var byline = tool.lineStream;
 
 route(function(req,res){
@@ -14,13 +17,39 @@ route(function(req,res){
 	var product = query.product;
 	var pageid = query.pageid;
 	var basepath = path.resolve(__dirname,'../'+product);
-	var srcUrl = basepath + '/conf/' + pageid + '.dev.js';
+	var confPath = '/conf/' + pageid + '.dev.js';
+	var srcUrl = basepath + confPath;
 
+	var model = query.model;
+	var time = Date.now();
 	toolOptions.basedir = basepath;
-	
-	var jsList = findFiles.allFilesList(basepath);
-	var jsListCon = findFiles.allFilesCon(jsList,basepath);
-	findJsAllImport(srcUrl,jsListCon,function(data){
-		res.end(data);	
-	});
+	if ('mini' == model) {
+		getAllJsDeps(basepath, confPath, function(files){
+			time = Date.now() - time;
+			var content = ['/* Time spend time '+time+' ms*/','function $import(){};'].join('\n');
+			for (var i = 0, len = files.length; i < len; i++) {
+				var file = files[i];
+				var url = 'http://'+req.headers.host + '/' + product + file;
+				content += ('document.write(\'<scr\'+\'ipt type="text/javascript" src="'+url+'"></s\'+\'cript>\');\n');
+			}
+			res.end(content);
+		});
+
+	} else {
+		var jsList = findFiles.allFilesList(basepath);
+		var jsListCon = findFiles.allFilesCon(jsList, basepath);
+
+		findJsAllImport(srcUrl, jsListCon, function(data, importsFiles){
+			time = (+new Date) - startTime;
+			res.write('/* Time spend time '+time+'ms */\r\n');
+			//importsFiles.push(confPath);
+			//logger.info(importsFiles);
+			if (model) {
+				res.write('/* Time spend time '+time+'ms */\r\n');
+			} else {
+				res.end(data);
+			}
+
+		});
+	}
 });
