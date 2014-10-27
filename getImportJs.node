@@ -1,0 +1,38 @@
+/**
+ * 获取制定文件的内容
+ * @author wangqiang
+ * @date 14/10/27
+ */
+var startTime = +new Date;
+var utils = addModule('js-combine-pack');
+var tool = utils.tool;
+var toolOptions = tool.config;
+var findFiles = tool.findFiles;
+var findJsAllImport = tool.findJsAllImport;
+var qs = require('querystring');
+var u = require('url');
+var fs = require('fs');
+var path = require('path');
+//var console = require('console');
+var byline = tool.lineStream;
+
+route(function(req,res){
+	var query = qs.parse(u.parse(req.url).query);
+	var product = query.product;
+	var uri = query.uri;
+	var basepath = path.resolve(__dirname,'../'+product);
+	if (0 !== uri.indexOf('/')) {
+		uri = '/' + uri;
+	}
+	var srcUrl = basepath + uri;
+	toolOptions.basedir = basepath;
+
+	var jsList = findFiles.allFilesList(basepath);
+	var jsListCon = findFiles.allFilesCon(jsList,basepath);
+	findJsAllImport(srcUrl,jsListCon,function(data){
+		res.writeHeader(200,{
+			'Content-Type':'application/javascript'
+		});
+		res.end(data);
+	});
+});

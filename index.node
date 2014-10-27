@@ -24,6 +24,17 @@ route(function(req,res){
 	var time = Date.now();
 	toolOptions.basedir = basepath;
 	if ('mini' == model) {
+		var hasToFilter = 'blog7' == product;
+
+		var filter = function(leaf, cb){
+			if (-1 !== leaf.file.indexOf('sinaEditor')) {
+				if (leaf.file.indexOf('editor.js')) {
+					cb(leaf.file, leaf);
+				}
+				return false;
+			}
+		};
+
 		getAllJsDeps(basepath, confPath, function(files){
 			time = Date.now() - time;
 			var content = ['/* Time spend time '+time+' ms*/','function $import(){};'].join('\n');
@@ -33,6 +44,13 @@ route(function(req,res){
 				content += ('document.write(\'<scr\'+\'ipt type="text/javascript" src="'+url+'"></s\'+\'cript>\');\n');
 			}
 			res.end(content);
+		}, null, function(leaf, cb){
+			if (-1 !== leaf.file.indexOf('sinaEditor')) {
+				if (leaf.file.indexOf('editor.js')) {
+					cb(leaf.file, leaf);
+				}
+				return false;
+			}
 		});
 
 	} else {
