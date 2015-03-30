@@ -55,8 +55,8 @@ route(function(req,res){
 
 	} else {
 		var jsList = findFiles.allFilesList(basepath);
-		var jsListCon = findFiles.allFilesCon(jsList,basepath);
-		findJsAllImport(srcUrl,jsListCon,function(data){
+		var jsListCon = findFiles.allFilesCon(jsList, basepath);
+		findJsAllImport(srcUrl, jsListCon, function(data){
 			res.writeHeader(200,{
 				'Content-Type':'application/javascript'
 			});
